@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sophos</title>
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
     <style>
         /* Main Page Styling */
         body {
@@ -14,22 +16,25 @@
             padding: 20px;
             overflow: hidden;
             font-family: 'Open Sans', sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
             height: 100vh;
+            position: relative;
         }
         
         /* Text Styling */
+        .header-group {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            bottom: calc(50% + 120px);
+            z-index: 2;
+        }
+
         h1 {
             font-size: 48px;
             margin-bottom: 0;
-            margin-top: 20px;
             text-align: center;
             position: relative;
-            z-index: 2;
         }
         
         h2 {
@@ -39,9 +44,18 @@
             opacity: 0.9;
             text-align: center;
             position: relative;
-            z-index: 2;
+            margin-bottom: 0;
         }
-        
+
+        body {
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        h1, h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+        }
+
         p, a, li {
             color: white;
         }
@@ -50,25 +64,50 @@
         .instructions {
             background-color: rgba(0,0,0, 0);
             padding: 20px;
-            border-radius: 10px;
-            max-width: 600px;
-            margin: 30px auto;
             text-align: left;
-            position: relative;
+            margin: auto;
+            width: min(90%, 500px);
             z-index: 2;
+        }
+
+        /* Add a container for better centering */
+        .content-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .content-container > * {
+            pointer-events: auto;
+        }
+
+        .header-group {
+            text-align: center;
+            margin-bottom: 2rem;
         }
 
         .instructions ol {
             padding-left: 20px;
+
         }
 
         .instructions li {
             margin-bottom: 15px;
+
         }
 
         .instructions ul {
             padding-left: 20px;
             margin-top: 8px;
+
         }
 
         .instructions ul li {
@@ -87,8 +126,8 @@
             color: #2980b9;
         }
 
-        /* Particle Animation Container */
-        .particle-container {
+        /* Particle Animation Canvas */
+        #particleCanvas {
             position: fixed;
             top: 0;
             left: 0;
@@ -96,63 +135,66 @@
             height: 100%;
             z-index: 1;
             background-color: rgb(3, 7, 18);
-            overflow: hidden;
-        }
-
-        .particle {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            transition: all 75ms linear;
         }
     </style>
 </head>
 <body>
-    <!-- Particle Animation Container -->
-    <div class="particle-container" id="particleContainer"></div>
-    <!-- Page Content -->
-    <h1>Sophos</h1>
-    <h2>Supercharging human knowledge</h2>
+    <!-- Particle Animation Canvas -->
+    <canvas id="particleCanvas"></canvas>
     
-    <!-- Instructions Section -->
-    <div class="instructions" style="margin-top: -30px;">
-        <ol>
-            <li>Download the <a href="https://testflight.apple.com/join/cy4MTPpD">desktop app</a>
-                <ul>
-                    <li>Log in</li>
-                    <li>Grant permission to screen capture</li>
-                    <li>Capture information on screen to make cards</li>
-                </ul>
-            </li>
-            <li>Download the <a href="https://testflight.apple.com/join/W9DmJfwA">mobile app</a> (currently broken)
-                <ul>
-                    <li>Log in with the same account</li>
-                    <li>Study on your phone</li>
-                </ul>
-            </li>
-        </ol>
+    <!-- Page Content -->
+    <div class="content-container">
+        <div class="header-group">
+            <h1>Sophos</h1>
+            <h2>Supercharging human knowledge</h2>
+        </div>
+        
+        <!-- Instructions Section -->
+        <div class="instructions">
+            <ol>
+                <li>Download the <a href="https://testflight.apple.com/join/cy4MTPpD">desktop app</a>
+                    <ul>
+                        <li>Log in</li>
+                        <li>Grant permission to screen capture</li>
+                        <li>Capture information on screen to make cards</li>
+                    </ul>
+                </li>
+                <li>Download the <a href="https://testflight.apple.com/join/W9DmJfwA">mobile app</a> (currently broken)
+                    <ul>
+                        <li>Log in with the same account</li>
+                        <li>Study on your phone</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
     </div>
 
     <script>
+        // Canvas setup
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
         class Particle {
-            constructor(container, initialProgress = null) {
-                this.container = container;
+            constructor(initialProgress = null, config) {
+                this.config = config;
                 this.id = Math.random();
-                this.element = document.createElement('div');
-                this.element.className = 'particle';
                 
-                // Initialize with normal distribution
-                this.size = this.clamp(this.normalRandom(0.455, 0.156), 0.26, 0.91);
-                this.speed = this.clamp(this.normalRandom(0.39, 0.104), 0.195, 0.65);
-                this.progress = initialProgress ?? Math.random() * 100;
-                this.offset = this.normalRandom(0, 30);
-                this.colorBase = this.clamp(this.normalRandom(0.65, 0.26), 0, 1);
-                this.phase = Math.random() * Math.PI * 2;
-                this.uniqueOffset = this.normalRandom(-1, 2);
-                
-                container.appendChild(this.element);
+                // Defer complex calculations until first update
+                this.size = null;
+                this.speed = null;
+                this.progress = initialProgress ?? (Math.random() * 180 - 40);
+                this.offset = null;
+                this.colorBase = null;
+                this.phase = null;
+                this.uniqueOffset = null;
+                this.initialized = false;
             }
 
             normalRandom(mean, stdDev) {
@@ -166,91 +208,199 @@
                 return Math.min(Math.max(num, min), max);
             }
 
+            initializeProperties() {
+                if (this.initialized) return;
+                
+                this.size = this.clamp(this.normalRandom(0.55, 0.2), 0.3, 1.2) * this.config.sizeMultiplier;
+                this.speed = this.clamp(this.normalRandom(0.38, 0.15), 0.2, 0.8) * this.config.speedMultiplier;
+                this.offset = this.normalRandom(0, 30);
+                this.colorBase = this.clamp(this.normalRandom(0.65, 0.26), 0, 1);
+                this.phase = Math.random() * Math.PI * 2;
+                this.uniqueOffset = this.normalRandom(-1, 2);
+                this.initialized = true;
+            }
+
             update(time) {
+                if (!this.initialized) {
+                    this.initializeProperties();
+                }
+                
                 this.progress += this.speed;
                 
-                if (this.progress > 100) {
-                    this.progress = 0;
-                    this.size = this.clamp(this.normalRandom(0.455, 0.156), 0.26, 0.91);
-                    this.speed = this.clamp(this.normalRandom(0.39, 0.104), 0.195, 0.65);
+                if (this.progress > 140) {
+                    this.progress = -40;
+                    this.size = this.clamp(this.normalRandom(0.55, 0.2), 0.3, 1.2) * this.config.sizeMultiplier;
+                    this.speed = this.clamp(this.normalRandom(0.38, 0.15), 0.2, 0.8) * this.config.speedMultiplier;
                     this.offset = this.normalRandom(0, 30);
                     this.colorBase = this.clamp(this.normalRandom(0.65, 0.26), 0, 1);
                     this.phase = Math.random() * Math.PI * 2;
                     this.uniqueOffset = this.normalRandom(-1, 2);
                 }
-
-                const position = this.getPosition(time);
-                const color = this.getParticleColor(time);
-                const baseScale = 0.7 + Math.sin(time * 0.8 + this.phase) * 0.15;
-                const scale = baseScale * this.size;
-                
-                this.element.style.left = `${position.x}%`;
-                this.element.style.top = `${position.y}%`;
-                this.element.style.backgroundColor = color;
-                this.element.style.transform = `scale(${scale})`;
-                this.element.style.boxShadow = `0 0 ${10 + scale * 15}px ${color}`;
             }
 
             getPosition(time) {
+                const width = canvas.width;
+                const height = canvas.height;
+                
                 const sigmoidX = (this.progress / 100) * 12 - 6;
-                const sigmoidY = 1 / (1 + Math.exp(-sigmoidX));
+                const sigmoidY = 1 / (1 + Math.exp(-sigmoidX * this.config.sigmoidSteepness));
                 
                 const waveAmplitude = 2;
                 const waveX = Math.sin(time * 0.5 + this.phase) * (waveAmplitude * this.uniqueOffset);
                 const waveY = Math.cos(time * 0.5 + this.phase) * (waveAmplitude * this.uniqueOffset);
                 
-                return {
-                    x: 50 + (this.progress - 50) * 1.2 + waveX,
-                    y: 50 - (sigmoidY - 0.5) * 100 + waveY
-                };
+                // Convert percentage-based calculations to pixel values
+                const x = width * (0.5 + ((this.progress - 50) * 0.012) + (waveX / 100) + (this.config.pathOffset / 100));
+                
+                // Add vertical padding of 15% from top and bottom
+                const verticalPaddingBottom = 0.05;
+                const verticalPaddingTop = 0.10;
+                const constrainedSigmoidY = verticalPaddingBottom + sigmoidY * (1 - verticalPaddingTop);
+
+                
+                const y = height * (0.5 - (constrainedSigmoidY - 0.5) + (waveY / 100));
+                
+                return { x, y };
             }
 
             getParticleColor(time) {
-                const hue = 260 + this.colorBase * 40;
-                const saturation = 70 + Math.sin(time + this.colorBase * Math.PI) * (10 + this.uniqueOffset * 5);
-                const lightness = 50 + Math.sin(time * 0.5 + this.colorBase * Math.PI) * (5 + this.uniqueOffset * 3);
+                const hue = this.config.baseHue + this.colorBase * this.config.colorRange;
+                const saturation = 85 + Math.sin(time + this.colorBase * Math.PI) * (15 + this.uniqueOffset * 7);
+                const lightness = (65 + Math.sin(time * 0.5 + this.colorBase * Math.PI) * (8 + this.uniqueOffset * 5)) 
+                    * this.config.brightnessMultiplier;
                 
-                const fadeEdges = Math.min(this.progress, 100 - this.progress) / (15 + this.uniqueOffset * 5);
-                const opacity = Math.min(0.6, fadeEdges);
+                // Smooth fade at edges
+                let opacity = 0.65;
+                
+                if (this.progress < 0) {
+                    opacity = (this.progress + 40) / 40 * 0.65;
+                } else if (this.progress > 100) {
+                    opacity = (1 - (this.progress - 100) / 40) * 0.65;
+                }
+                
+                opacity = Math.max(0, Math.min(0.65, opacity));
                 
                 return `hsla(${hue}, ${saturation}%, ${lightness}%, ${opacity})`;
             }
 
-            destroy() {
-                this.container.removeChild(this.element);
+            draw(ctx, time) {
+                const position = this.getPosition(time);
+                const color = this.getParticleColor(time);
+                const baseScale = (0.7 + Math.sin(time * 0.8 + this.phase) * 0.15) * 1.5;
+                const scale = baseScale * this.size;
+                
+                // Only draw if the particle is visible
+                if (this.progress >= -20) {
+                    ctx.save();
+                    ctx.translate(position.x, position.y);
+                    ctx.scale(scale, scale);
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 5, 0, Math.PI * 2);
+                    ctx.fillStyle = color;
+                    ctx.fill();
+                    ctx.restore();
+                }
             }
         }
+
+        // Global array to store all particle systems
+        const particleSystems = [];
 
         class ParticleSystem {
-            constructor() {
-                this.container = document.getElementById('particleContainer');
+            constructor(config) {
                 this.particles = [];
                 this.time = 0;
+                this.config = config;
+                this.targetParticleCount = config.particleCount;
+                this.currentParticleCount = 0;
                 
-                // Create initial particles
-                for (let i = 0; i < 60; i++) {
-                    this.particles.push(new Particle(this.container));
-                }
+                // Add this system to the global array
+                particleSystems.push(this);
 
-                this.animate = this.animate.bind(this);
-                requestAnimationFrame(this.animate);
+                // Only start the global animation if this is the first system
+                if (particleSystems.length === 1) {
+                    requestAnimationFrame(globalAnimate);
+                }
             }
 
-            animate() {
-                this.time += 0.008;
+            update(time) {
+                this.time = time;
                 
+                // Gradually add particles
+                if (this.currentParticleCount < this.targetParticleCount && this.currentParticleCount < 5) {
+                    const newParticles = Math.min(2, this.targetParticleCount - this.currentParticleCount);
+                    for (let i = 0; i < newParticles; i++) {
+                        this.particles.push(new Particle(null, this.config));
+                        this.currentParticleCount++;
+                    }
+                } else if (this.currentParticleCount < this.targetParticleCount && performance.now() - lastParticleAddTime > 50) {
+                    const newParticles = Math.min(3, this.targetParticleCount - this.currentParticleCount);
+                    for (let i = 0; i < newParticles; i++) {
+                        this.particles.push(new Particle(null, this.config));
+                        this.currentParticleCount++;
+                    }
+                    lastParticleAddTime = performance.now();
+                }
+
                 this.particles.forEach(particle => {
-                    particle.update(this.time);
+                    particle.update(time);
                 });
-                
-                requestAnimationFrame(this.animate);
+            }
+
+            draw() {
+                this.particles.forEach(particle => {
+                    particle.draw(ctx, this.time);
+                });
             }
         }
 
-        // Initialize the particle system when the page loads
+        // Global animation function
+        let globalTime = 0;
+        function globalAnimate() {
+            globalTime += 0.008;
+            
+            // Clear the canvas once per frame
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Update and draw all particle systems
+            particleSystems.forEach(system => {
+                system.update(globalTime);
+                system.draw();
+            });
+
+            requestAnimationFrame(globalAnimate);
+        }
+
+        // Initialize the particle systems when the page loads
         window.addEventListener('load', () => {
-            new ParticleSystem();
+            const config1 = {
+                particleCount: 45,
+                sizeMultiplier: 1.0,
+                speedMultiplier: 0.4,
+                pathOffset: -20,
+                colorRange: 35,
+                baseHue: 255,
+                brightnessMultiplier: 1.05,
+                sigmoidSteepness: 1.4
+            };
+            
+            const config2 = {
+                particleCount: 45,
+                sizeMultiplier: 0.8,
+                speedMultiplier: 0.4,
+                pathOffset: 20,
+                colorRange: 35,
+                baseHue: 0,
+                brightnessMultiplier: 1.05,
+                sigmoidSteepness: 1.4
+            };
+
+            new ParticleSystem(config1);
+            new ParticleSystem(config2);
         });
+
+        // Track last particle add time
+        let lastParticleAddTime = 0;
     </script>
 </body>
 </html>
