@@ -156,10 +156,10 @@
                     <ul>
                         <li>Log in</li>
                         <li>Grant permission to screen capture</li>
-                        <li>Capture information on screen to make cards</li>
+                        <li>Turn information on screen to make cards</li>
                     </ul>
                 </li>
-                <li>Download the <a href="https://testflight.apple.com/join/W9DmJfwA">mobile app</a> (currently broken)
+                <li>Download the <a href="https://testflight.apple.com/join/W9DmJfwA">mobile app</a>
                     <ul>
                         <li>Log in with the same account</li>
                         <li>Study on your phone</li>
@@ -253,8 +253,8 @@
                 const x = width * (0.5 + ((this.progress - 50) * 0.012) + (waveX / 100) + (this.config.pathOffset / 100));
                 
                 // Add vertical padding of 15% from top and bottom
-                const verticalPaddingBottom = 0.05;
-                const verticalPaddingTop = 0.10;
+                const verticalPaddingBottom = this.config.verticalPaddingBottom;
+                const verticalPaddingTop = this.config.verticalPaddingTop;
                 const constrainedSigmoidY = verticalPaddingBottom + sigmoidY * (1 - verticalPaddingTop);
 
                 
@@ -373,30 +373,39 @@
 
         // Initialize the particle systems when the page loads
         window.addEventListener('load', () => {
-            const config1 = {
+            const defaultConfig = {
                 particleCount: 45,
                 sizeMultiplier: 1.0,
                 speedMultiplier: 0.4,
-                pathOffset: -20,
-                colorRange: 35,
-                baseHue: 255,
+                pathOffset: 0,
+                colorRange: 255,
+                baseHue: 128,
                 brightnessMultiplier: 1.05,
-                sigmoidSteepness: 1.4
+                sigmoidSteepness: 1.2,
+                verticalPaddingBottom: 0.05,
+                verticalPaddingTop: 0.10
             };
             
-            const config2 = {
-                particleCount: 45,
-                sizeMultiplier: 0.8,
-                speedMultiplier: 0.4,
-                pathOffset: 20,
-                colorRange: 35,
-                baseHue: 0,
-                brightnessMultiplier: 1.05,
-                sigmoidSteepness: 1.4
-            };
-
-            new ParticleSystem(config1);
-            new ParticleSystem(config2);
+            const createConfig = (modifications) => ({...defaultConfig, ...modifications});
+            
+            const configs = [
+                createConfig(
+                    {
+                        pathOffset: -20,
+                        colorRange: 35,
+                        baseHue: 255
+                    }
+                ),
+                createConfig(
+                    {
+                        pathOffset: 20,
+                        colorRange: 35,
+                        baseHue: 0
+                    }
+                )
+            ];
+            
+            configs.forEach(config => new ParticleSystem(config));
         });
 
         // Track last particle add time
